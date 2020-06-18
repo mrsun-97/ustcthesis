@@ -1,32 +1,92 @@
 % !TeX root = ../main.tex
 
-\chapter{简介}
+\chapter{张量网络态}
 
-\section{一级节标题}
+\section{张量}
 
-\subsection{二级节标题}
+\subsection{张量的定义}
 
-\subsubsection{三级节标题}
+\subsubsection{抽象定义}
+
+若$V_i$与$W_i$都是域$\mathbb{F}$上的有限线性空间，$\otimes$是张量积,那么一个张量即是原空间$W_i$与对偶空间$V^*_i$的张量积空间中的一个元素，若张量积空间由$p$个原空间与$q$个对偶空间构成，则其上张量被称为$(p,q)$阶的:
+\[
+\text{order-}(p,q) \text{ tensor } T \in W_1 \otimes W_2 \otimes \dots \otimes W_p 
+\otimes V^*_1 \otimes V^*_2 \otimes \dots \otimes V^*_q
+\]
+
+若$\{{e^{(i)}}_k\}$与$\{{\eta^{(i)}}_k\}$分别为空间$W_i$与对偶空间$V^*_i$的基，则利用爱因斯坦求和约定，张量可以被表示为分量和的形式：
+\[
+T=T^{i_1\dots i_p}_{j_1\dots j_q} \,\, {e^{(1)}}_{i_1}\otimes\dots\otimes{e^{(p)}}_{i_p}
+\otimes {\eta^{(1)j_1}}\otimes\dots\otimes{\eta^{(q)j_q}}
+\]
+
+用于描述量子多体系统的张量网络是由具体的张量表示的，因此为了更方便与准确的表示本文中的张量，我们将张量的定义特殊化以方便描述本文中使用的张量。
+
+\subsubsection{具体定义}
+
+一个实数域或复数域上的有限多维数组$\{T_{i_1 i_2\dots i_p}\}$被称为一个张量，若表示一个张量的数组的维度为$p$，则称此张量为$p$阶的。若第$k$个指标$i_k$的取值范围为集合$S_{k}$,则$\lvert S_{k}\rvert$称为指标$i_k$的维数。若两个同阶张量的指标维数也依次相等，则称两个张量是相同形状的。
+
+相较于上文中的定义，这里应用了以下改动：
+\paragraph{指定数域}
+一个量子系统至多在复数域即可被表示，因此这里把数域指定为实数域或复数域，此时张量可表示为实数或复数域上的多维数组。
+\paragraph{约定形式}
+张量网络中的张量有两种指标，一种是由实空间指向标记的缩并指标，一种是由对应的自旋分量(通常为$S_z$的本征值)标记的物理指标。这里我们至多只需研究张量在不同自旋基矢下的变换，因此可以不区分协变与逆变指标，默认张量为$(0,p)$或$(p,0)$阶的。
+
+\subsection{张量的运算}
+
+\subsubsection{加法运算}
+
+两个相同形状的张量$A$与$B$之间可以定义加法：$C = A+B$，即：
+\[
+C_{i_1 i_2 \dots i_p} = A_{i_1 i_2 \dots i_p} + B_{i_1 i_2 \dots i_p}
+\]
+
+
+\subsubsection{数乘运算}
+
+对任意$\alpha \in \mathbb{C}$，可定义张量与其的数乘运算：$M' = \alpha M = M \alpha$，即：
+\[
+M_{i_1 i_2 \dots i_p}' = \alpha M_{i_1 i_2 \dots i_p}
+\]
+
+\subsubsection{缩并运算}
+
+若两个张量$A$与$B$间的一个或者一些指标维数分别相同，则可以定义缩并运算对重复指标遍历求和：
+\[
+C_{\alpha\beta} = \sum_{\gamma=1}^{D_\gamma} A_{\alpha\gamma} B_{\gamma\beta}
+\]
+或
+\[
+C_{\alpha\beta} = \sum_{\delta,\gamma,\nu=1}^{D_\delta,D_\gamma,D_\nu} A_{\alpha\delta\gamma\nu} B_{\gamma\beta\nu\delta}
+\]
+
+由以上定义易知，相同形状的张量构成线性空间，其加法与数乘的性质与矢量一致，且两个张量之间缩并的顺序不影响结果。
+
+\section{张量网络}
+
+\subsection{张量网络的定义}
+
+张量网络是一组张量的集合与其上的缩并规则构成的数学结构。
+
+张量网络的全部结构由无向图$G=(V,E)$表示，其中顶点集$V$为空顶点集$V_L$与张量顶点$V_T$的不交并，边集$E$为$E_L$与$E_T$的不交并。表示规则为：
+\paragraph{每个张量与$V_T$中元素一一对应；}
+
+\paragraph{每个未缩并指标与$V_L$，$E_L$中元素都一一对应；}
+
+\paragraph{每对缩并指标与$E_T$中元素一一对应。}
+
+由上面的表示，每个张量的阶数与其对应$v\in V_T$的节点度相等；若两个张量间有$k$个缩并指标，其对应顶点间就有$k$个公共边。
 
 \paragraph{四级节标题}
 
 \subparagraph{五级节标题}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur.
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-deserunt mollit anim id est laborum.
-
-
+abcde fghijk lmn
 
 \section{脚注}
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua.
+incididunt 
 \footnote{Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
   nisi ut aliquip ex ea commodo consequat.
   Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
