@@ -8,7 +8,10 @@
 
 % 加载宏包、全部的配置
 \input{ustcsetup.tex}
-
+\usepackage{mathtools}
+\DeclarePairedDelimiter\bra{\langle}{\rvert}
+\DeclarePairedDelimiter\ket{\lvert}{\rangle}
+\DeclarePairedDelimiterX\braket[2]{\langle}{\rangle}{#1 \delimsize\vert #2}
 
 \begin{document}
 

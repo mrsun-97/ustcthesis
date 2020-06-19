@@ -30,43 +30,58 @@ T=T^{i_1\dots i_p}_{j_1\dots j_q} \,\, {e^{(1)}}_{i_1}\otimes\dots\otimes{e^{(p)
 \paragraph{指定数域}
 一个量子系统至多在复数域即可被表示，因此这里把数域指定为实数域或复数域，此时张量可表示为实数或复数域上的多维数组。
 \paragraph{约定形式}
-张量网络中的张量有两种指标，一种是由实空间指向标记的缩并指标，一种是由对应的自旋分量(通常为$S_z$的本征值)标记的物理指标。这里我们至多只需研究张量在不同自旋基矢下的变换，因此可以不区分协变与逆变指标，默认张量为$(0,p)$或$(p,0)$阶的。
+本文中的张量有两种指标，一种是由实空间取向标记的缩并指标，一种是由对应的自旋分量(通常为$S_z$的本征值)标记的物理指标。这里我们至多只需研究张量在不同自旋基矢下的变换，因此可以不区分协变与逆变指标，默认张量为$(0,p)$或$(p,0)$阶的。
 
 \subsection{张量的运算}
 
 \subsubsection{加法运算}
 
 两个相同形状的张量$A$与$B$之间可以定义加法：$C = A+B$，即：
-\[
+\begin{equation}
 C_{i_1 i_2 \dots i_p} = A_{i_1 i_2 \dots i_p} + B_{i_1 i_2 \dots i_p}
-\]
+\end{equation}
 
 
 \subsubsection{数乘运算}
 
 对任意$\alpha \in \mathbb{C}$，可定义张量与其的数乘运算：$M' = \alpha M = M \alpha$，即：
-\[
+\begin{equation}
 M_{i_1 i_2 \dots i_p}' = \alpha M_{i_1 i_2 \dots i_p}
-\]
+\end{equation}
 
 \subsubsection{缩并运算}
 
 若两个张量$A$与$B$间的一个或者一些指标维数分别相同，则可以定义缩并运算对重复指标遍历求和：
-\[
+\begin{equation}
 C_{\alpha\beta} = \sum_{\gamma=1}^{D_\gamma} A_{\alpha\gamma} B_{\gamma\beta}
-\]
+\end{equation}
 或
-\[
+\begin{equation}
 C_{\alpha\beta} = \sum_{\delta,\gamma,\nu=1}^{D_\delta,D_\gamma,D_\nu} A_{\alpha\delta\gamma\nu} B_{\gamma\beta\nu\delta}
+\end{equation}
+所得张量的未缩并指标可继续缩并：
+\begin{equation}
+\label{eq.1.5}
+M_{\alpha m n} = \sum_{\beta=1}^{D_\beta} C_{\alpha\beta} F_{\beta m n}
+	= \sum_{\delta,\gamma,\nu,\beta=1}^{D_\delta,D_\gamma,D_\nu,D_\beta} A_{\alpha\delta\gamma\nu} B_{\gamma\beta\nu\delta} F_{\beta m n}
+\end{equation}
+
+\subsubsection{分解运算}
+
+分解可看作缩并的逆运算。若给定张量$\left\{M_{\alpha m n}\right\}$，则如公式$(\ref{eq.1.5})$中将张量表示为几个张量的缩并的形式，称为张量的分解。\\
+
+由以上定义易知，相同形状的张量构成线性空间，其加法与数乘的性质与矢量一致，且张量之间缩并的先后顺序不影响结果。下文中为了书写方便，若无特殊说明，张量缩并均采用爱因斯坦求和规则，即默认重复出现的指标需要求和。例如公式$(\ref{eq.1.5})$重新写为：
+\[
+M_{\alpha m n} = C_{\alpha\beta} F_{\beta m n}
+	= A_{\alpha\delta\gamma\nu} B_{\gamma\beta\nu\delta} F_{\beta m n}
 \]
 
-由以上定义易知，相同形状的张量构成线性空间，其加法与数乘的性质与矢量一致，且两个张量之间缩并的顺序不影响结果。
 
 \section{张量网络}
 
 \subsection{张量网络的定义}
 
-张量网络是一组张量的集合与其上的缩并规则构成的数学结构。
+张量网络是一组张量的集合与其上的缩并规则构成的数学结构。整个张量网络等效于一个巨大的张量\cite{hsiaoJournalClubBrief}。
 
 张量网络的全部结构由无向图$G=(V,E)$表示，其中顶点集$V$为空顶点集$V_L$与张量顶点$V_T$的不交并，边集$E$为$E_L$与$E_T$的不交并。表示规则为：
 \paragraph{每个张量与$V_T$中元素一一对应；}
@@ -75,8 +90,38 @@ C_{\alpha\beta} = \sum_{\delta,\gamma,\nu=1}^{D_\delta,D_\gamma,D_\nu} A_{\alpha
 
 \paragraph{每对缩并指标与$E_T$中元素一一对应。}
 
-由上面的表示，每个张量的阶数与其对应$v\in V_T$的节点度相等；若两个张量间有$k$个缩并指标，其对应顶点间就有$k$个公共边。
+边集$E$中元素被称为脚，$E_L$中元素只与一个张量顶点相连，我们称其为“悬空脚”；$E_T$中元素连接两个张量顶点，我们称其为“缩并脚”或者“键”。
 
+\subsection{张量网络的图表示法}
+
+每个张量网络都对应一个无向图，因此我们可以将图画出，通过图形来了解张量网络的结构。在通常的无向图上，我们将张量顶点扩大为空心图形着重显示，用以代表此顶点对应点的张量。这种无向图的表示被称为张量网络图。
+
+在张量网络图中，每个$n$阶张量一定有$n$个脚，需要缩并的张量之间公共脚的个数对应需要缩并的指标个数，每个脚对应的指标的维数不表示在图中。具体的表示如图 -----------
+
+相比于文字叙述或代数表达，张量网络图能够更直观的表示张量网络的结构，也使得我们能更高效的描述对网络施加的缩并、分解等操作。
+
+\subsection{张量网络的运算}
+
+\subsubsection{张量网络的缩并}
+
+一个张量网络中的张量之间存在缩并关系，当我们应用这些关系将某些张量缩并为一个张量时，其张量网络图中对应的边表现为收缩至消失，且其两端的张量顶点融合为一个，如图-------。这种操作被称之为张量网络对其边(键)的缩并。
+
+\subsection{张量网络的分解}
+
+如同张量的分解可看做张量缩并的逆运算，张量网络的分解也可借助其缩并来定义。当我们将网络中的某些张量分别拆分为其他张量的缩并时，这种操作被称之为张亮的分解，如图——————。
+
+\section{张量网络与量子态}
+
+\subsection{量子态的表示}
+
+上文主要介绍了张量网络相关的性质，本节我们将说明张量网络具体应怎样应用至量子态的表示中。
+
+通常情况下，我们会遇到由$N$粒子构成的量子多体系统，其每一个粒子态空间中有$p$个态。最常见的例子即是一个由自旋$\frac12$的粒子组成的$N$粒子自旋系统，表示这样的量子态的态矢$\ket{\varphi}\in\left(\mathbb{C^d}\right)^{\otimes N}$为
+\begin{equation}
+\ket{\varphi} = \sum_{j_1 \dots j_N} c_{j_i \dots j_N}\ket{j_1 \dots j_N}
+	= \sum_{j_1 \dots j_N}c_{j_i \dots j_N}\ket{j_1}\otimes \dots \otimes\ket{j_N}
+\end{equation}
+其系数$c_{j_i \dots j_N}\in\mathbb{C}$对于所有的指标构成一个张量 $\left\{c_{j_i \dots j_N}\right\}$，将其用张量网络图表示如图————————。
 \paragraph{四级节标题}
 
 \subparagraph{五级节标题}
