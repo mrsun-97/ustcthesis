@@ -30,7 +30,7 @@ T=T^{i_1\dots i_p}_{j_1\dots j_q} \,\, {e^{(1)}}_{i_1}\otimes\dots\otimes{e^{(p)
 \paragraph{指定数域}
 一个量子系统至多在复数域即可被表示，因此这里把数域指定为实数域或复数域，此时张量可表示为实数或复数域上的多维数组。
 \paragraph{约定形式}
-本文中的张量有两种指标，一种是由实空间取向标记的缩并指标，一种是由对应的自旋分量(通常为$S_z$的本征值)标记的物理指标。这里我们至多只需研究张量在不同自旋基矢下的变换，因此可以不区分协变与逆变指标，默认张量为$(0,p)$或$(p,0)$阶的。
+本文中的张量有两种指标，一种是由实空间取向标记的缩并指标，一种是由对应的自旋分量(通常为$S_z$的本征值)标记的物理指标。这里我们至多只需研究张量在不同自旋右矢下的变换，因此不严格区分协变与逆变指标，默认张量为$(0,p)$或$(p,0)$阶的。
 
 \subsection{张量的运算}
 
@@ -106,22 +106,130 @@ M_{\alpha m n} = C_{\alpha\beta} F_{\beta m n}
 
 一个张量网络中的张量之间存在缩并关系，当我们应用这些关系将某些张量缩并为一个张量时，其张量网络图中对应的边表现为收缩至消失，且其两端的张量顶点融合为一个，如图-------。这种操作被称之为张量网络对其边(键)的缩并。
 
-\subsection{张量网络的分解}
+\subsubsection{张量网络的分解}
 
-如同张量的分解可看做张量缩并的逆运算，张量网络的分解也可借助其缩并来定义。当我们将网络中的某些张量分别拆分为其他张量的缩并时，这种操作被称之为张亮的分解，如图——————。
+如同张量的分解可看做张量缩并的逆运算，张量网络的分解也可借助其缩并来定义。当我们将网络中的某些张量分别拆分为其他张量的缩并时，这种操作被称之为张量的分解，如图——————。
 
 \section{张量网络与量子态}
 
-\subsection{量子态的表示}
+\subsection{量子态的常规表示}
 
-上文主要介绍了张量网络相关的性质，本节我们将说明张量网络具体应怎样应用至量子态的表示中。
+上文主要介绍了张量网络的相关定义以及性质，本节我们将说明张量网络具体应怎样应用至量子态的表示。
 
-通常情况下，我们会遇到由$N$粒子构成的量子多体系统，其每一个粒子态空间中有$p$个态。最常见的例子即是一个由自旋$\frac12$的粒子组成的$N$粒子自旋系统，表示这样的量子态的态矢$\ket{\varphi}\in\left(\mathbb{C^d}\right)^{\otimes N}$为
+在从多体量子态过渡到张量网络之前，我们先回顾一下多体系统的一些概念。
+
+\subsubsection{直积态}
+
+两个量子系统的纯态分别记为$\ket{\phi_1}\in\mathcal{H}_1$与$\ket{\phi_2}\in\mathcal{H}_2$，纯态$\ket{\varphi}\in\mathcal{H}$表示两个量子系统视为一个整体时的量子态，则$\mathcal{H} = \mathcal{H}_1\otimes\mathcal{H}_2$。若$\ket{\varphi}$具有形式
+\begin{equation}\label{eq-product-state}
+\ket{\varphi}=\ket{\phi_1}\otimes\ket{\phi_2}
+\end{equation}
+则$\ket{\varphi}$被称为直积态。否则，其被称为纠缠态。对于两体纠缠态，其不能直接写为两个纯态的直积，被表示为一系列直积之和
+\begin{equation}\label{eq-product-state-sum}
+\ket{\varphi} = \sum_{i,j}^{d_i,d_j} c_{i,j}\ket{i}\ket{j}
+\end{equation}
+
+为了研究这个两体系统的性质，我们可能会用到一些数学处理。
+
+\subsubsection{奇异值分解}
+
+对任意矩阵$A\in\mathbb{C}^{M\times N}$做奇异值分解\cite{stewartEarlyHistorySingular1993}(Singular Value Decomposition, SVD)得
+\begin{equation}\label{eq-SVD}
+A = U \Lambda V^\dagger
+\end{equation}
+(1) $U\in\mathbb{C}^{M\times L},\: U^\dagger U=I$；\\(2) $V^\dagger\in\mathbb{C}^{L\times N},\: V^\dagger V=I$；\\(3) $\Lambda$ 为$L\times L$非负实对角阵，对角元素$\lambda_i$称为奇异值，且非$0$对角元素个数称之为$A$的秩，对任意酉不变范数有$\lVert A \rVert^2=\sum_i \lambda_i^2$. 其中$L=\min(M,N)$.
+
+\subsubsection{施密特分解}
+
+对于有限维的两体纠缠系统，存在一种称为施密特分解的方法，它将(\ref{eq-product-state-sum})中的量子态分解为以下形式
 \begin{equation}
+\ket{\varphi}=\sum_{i=1}^{\chi} \lambda_i \ket{i_A}\ket{i_B}
+\end{equation}
+其中$\lambda_i$为正数且有$\sum_i \lambda_i^2 = 1$. 施密特分解可由奇异值分解得来，我们只需将SVD分解应用在$\{c_{i,j}\}$上，
+\begin{align}
+	\ket{\varphi} &= \sum_{i,j}^{d_i,d_j} c_{i,j}\ket{i}\ket{j} \\
+		 &= \sum_{i,j}^{d_i,d_j} \sum_k^\chi u_{i,k} \lambda_{k} v_{k,j} \ket{i}\ket{j}\\
+		 &= \sum_k^\chi \lambda_k \left( \sum_i^{d_i}u_{i,k}\ket{i} \right) \left( \sum_j^{d_j}v_{k,j}\ket{j} \right)\\
+		 &= \sum_{k=1}^{\chi} \lambda_k \ket{k_A}\ket{k_B}\\
+		 &= \sum_{i=1}^{\chi} \lambda_i \ket{i_A}\ket{i_B}
+\end{align}
+矩阵$\left\{c_{i,j}\right\}$的秩$\chi$在这里被称为施密特秩，被某一表象下的$\ket{\varphi}$唯一确定。施密特秩可以用来衡量两体系统之间纠缠状态数的多少，也经常会出现在对多体系统的分析中。
+
+\subsubsection{多体系统}
+通常情况下，我们会遇到由$N$粒子构成的量子多体系统，其每一个粒子具有维度为$p$的态空间。最常见的例子即是一个由自旋$\frac12$的粒子组成的$N$粒子自旋系统，其$p=2$. 要表示这样的量子态，我们可以选择单体$S_z$算符的本征态$\ket{j_k}$为每个粒子态空间的基，这样整体态空间的基可由每个粒子态空间基的直积构成，整体的态矢$\ket{\varphi}\in\left(\mathbb{C^d}\right)^{\otimes N}$表示为
+\begin{equation}\label{eq-1.6}
 \ket{\varphi} = \sum_{j_1 \dots j_N} c_{j_i \dots j_N}\ket{j_1 \dots j_N}
 	= \sum_{j_1 \dots j_N}c_{j_i \dots j_N}\ket{j_1}\otimes \dots \otimes\ket{j_N}
 \end{equation}
-其系数$c_{j_i \dots j_N}\in\mathbb{C}$对于所有的指标构成一个张量 $\left\{c_{j_i \dots j_N}\right\}$，将其用张量网络图表示如图————————。
+其中$j_k=\,\uparrow\text{或 }\downarrow$. 系数$c_{j_i \dots j_N}\in\mathbb{C}$对于所有的指标构成一个张量 $\left\{c_{j_i \dots j_N}\right\}$，将其用张量网络图表示如图————————。在这种表示中，表示一个$N$体系统的量子态需要的参数的个数为$2^N$，它随系统规模的增大而指数级增大。若想利用计算机来计算这个多体系统的有关性质，所需程序的空间复杂度至少是$\mathrm{O}\left(2^N\right)$的。在这种情况下，程序可计算的系统大小就会因为内存间有限等原因被限制在很小的规模。
+
+图\\
+
+为了解决这个问题，我们希望寻找上述系统的其它的表示方式。这种表示方式应该避免指数级的空间复杂度，并且能正确的表示系统的状态。
+
+\subsection{矩阵乘积态}
+\subsubsection{描述}
+
+为了避免过高的空间复杂度，一种可行的方法是将整个系数张量拆分为不同的小张量的缩并。一种一维的构造叫做矩阵直积态(Matrix Product State, MPS)，它在周期边界条件下将$\ket{\varphi}$表示为
+\begin{equation}\label{MPS_PBC}
+\ket{\varphi} = \sum_{j_1\dots j_N}^p \Tr\left( A_{1}^{j_1} A_{2}^{j_2}\dots A_{N}^{j_N} \right)\ket{j_1 j_2\dots j_N}
+\end{equation}
+在开边界下表示为
+\begin{equation}
+\ket{\varphi} = \sum_{j_1\dots j_N}^p \bra{l} A_{1}^{j_1} A_{2}^{j_2}\dots A_{N}^{j_N}\ket{r} \:
+\ket{j_1 j_2\dots j_N}
+\end{equation}
+上式中$A_n^{j_n}$表示第$n$个张量上自旋$j_n$对应的矩阵(2阶张量)。在周期边界条件下，考虑上文描述的$N$粒子$p$自旋系统，表示其量子态需要$\mathrm{O}\left(2^N\right)$的空间复杂度。公式(\ref{MPS_PBC})中需要的参数个数为小矩阵的和，系统中每个粒子的每个状态对应一个参数矩阵，因此整体的空间复杂度为$\mathrm{O}(NpD^2)$，其中$D$来自于假设每个矩阵$A_{n}^{j_n}\in \mathbb{C}^{D\times D}$. 在新的表示方式下，系统的空间复杂度降低为多项式级，这样在系统规模不断扩大时，我们计算所需的空间开销增速显著变慢，这意味着我们可以承受对更大规模系统的计算。
+
+
+\subsubsection{VBS态}
+另一种看待MPS的方式是通过 Valance Bond States \cite[8]{dongZhangLiangWangLuoSuanFaCongBoSeZiXiTongDaoFeiMiZiXiTong2017}来构造系统的量子态。我们考虑上文中一维周期边界条件上的自旋链，每个格点上由两个相同的自由度为$D$的粒子$a_i$与$b_i$，每个粒子与相邻格点形成最大纠缠态
+\begin{equation}
+\ket{\varphi(b_i a_{i+1})} = \ket{I} = \sum_{\alpha=1}^D \ket{\alpha,\alpha},
+\end{equation}
+整个系统由
+\begin{equation}
+\ket{\varPhi} = \ket{I}^{\otimes N}
+\end{equation}
+构成。此时我们可以把每一对粒子$a_i,b_i$构成的大的希尔伯特空间投影到真实的单粒子希尔伯特空间，在第$n$个格点考虑我们需要用到的投影算符$A(n)$
+\begin{equation}
+A(n) = \sum_{i=1}^p\sum_{\alpha,\beta=1}^D {A(n)}^i_{\alpha,\beta}\ket{i}\bra{\alpha,\beta}
+\end{equation}
+将其逐点作用在$\ket\varPhi$上，我们便得到了与(\ref{MPS_PBC})相同的量子态$\ket\varphi$。公式中出现的$A(n)^i_{\alpha,\beta}$正是张量网络中出现的张量$A_n$的各个分量。
+\subsubsection{性质}
+
+\paragraph{平移对称性}
+
+开边界条件下，MPS不具有平移对称性，因为原则上它的每个张量都可以是不同的。若我们将系统由指定的元胞无限平移而成，那么MPS应使用周期边界条件，使其等效于张量网络由指定张量序列无限平移形成，它可以具有我们所表示系统的平移对称性。
+
+\paragraph{纠缠熵面积定律}
+
+纠缠熵是一个用来衡量量子系统纠缠大小的物理量。一个具有高度纠缠的基态的强关联系统往往能表现出特殊的集体量子行为\cite{vidalEntanglementQuantumCritical2003}，因此纠缠熵在研究强关联系统时有重要意义。
+
+纠缠熵面积定律指出，张量网络子系统间的纠缠熵仅仅与子系统边界有关。MPS遵守纠缠熵面积定律，由于是一维系统，其边界是零维的端点，因此其边界与系统规模无关，纠缠熵$S(L)=-\Tr\left(\rho_L\log\rho_L\right)=\mathrm{O}(\log D)$为常数\cite{PracticalIntroductionTensor2014},其中$\rho_L$为子系统$L$的约化密度矩阵。
+
+纠缠熵面积定律是张量网络能够有效表示量子态的原理所在。对于有能隙的系统，其基态总是遵守纠缠熵面积定律，而任何遵守纠缠熵面积定律的量子态都能被MPS所表示\cite{eisertEntanglementTensorNetwork2013}。这就解释了为何MPS可以用更少的参数表示量子态：当我们关注系统在基态附近的性质时，系统所处的量子态只能是那些遵循纠缠熵面积定律的量子态，这些态都可以被MPS表示，系统的参数在面积定律的约束下大大减少。
+
+\paragraph{有限关联长度}
+
+两体关联反应一个算符在不同位置处时其期望值的相关程度
+\begin{equation}
+C(r) = \langle O_i O'_{i+r}\rangle - \langle O_i\rangle\langle O'_{i+r}\rangle
+\end{equation}
+在文献~\inlinecite{PracticalIntroductionTensor2014}的130页中给出了一个简单的例子，证明了一个长度为一的在MPS周期边界条件下关联函数是指数下降的。这种指数下降在一维有能隙系统中普遍存在，这侧面反映了为何MPS能很好的表示这种系统。反之，对处于相变点附近具有趋于无穷的关联长度的系统，MPS无法表示。
+
+
+\subsection{投影纠缠态}
+\subsubsection{描述}
+
+矩阵直积态利用多体系统基态的特点对多体系统的整个希尔伯特空间做了近似，并因此能够高效的描述一维多体系统。将这种方法推广到二维系统的一个尝试便是投影纠缠态(Projected Entangled Pair States, PEPS)，它是许多二维格点算法的基础。同上文中矩阵乘积态的思想一致，我们希望将(\ref{eq-1.6})中系数构成的张量分解为小张量的缩并来减少参数。若我们的系统是一个$N\times M$的方形格点，我们可以按与系统格点相同的方式分解张量，图——————————
+\begin{equation}\label{PEPS_PBC}
+\ket{\varphi} = \sum_{\{j\}} \Tr\left( A^{(1,1)}_{j_{1,1}} A^{(1,2)}_{j_{1,2}}\dots A^{(N,M)}_{j_{N,M}} \right)\ket{j_{1,1} j_{1,2}\dots j_{N,M}}
+\end{equation}
+这里的每个$A^{(n,m)}_{j_{n,m}}$都是一个$4$阶张量，含有四个与周围张量缩并的键，整体上每个格点对应一个$5$阶张量$A^{(n,m)} = A^{n,m}(l,r,u,d,j_{n,m})$，只有一个悬空脚为$j_{nm}$.
+
+另外还有一种看待投影纠缠态的方式，是通过将PEPS看做高维希尔伯特空间中最大纠缠态的投影。我们考虑在系统的每个格点上共有
+------------------------分割线------------------------
 \paragraph{四级节标题}
 
 \subparagraph{五级节标题}
