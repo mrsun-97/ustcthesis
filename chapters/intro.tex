@@ -142,7 +142,7 @@ A = U \Lambda V^\dagger
 \subsubsection{施密特分解}
 
 对于有限维的两体纠缠系统，存在一种称为施密特分解的方法，它将(\ref{eq-product-state-sum})中的量子态分解为以下形式
-\begin{equation}
+\begin{equation}\label{eq-sd-phi}
 \ket{\varphi}=\sum_{i=1}^{\chi} \lambda_i \ket{i_A}\ket{i_B}
 \end{equation}
 其中$\lambda_i$为正数且有$\sum_i \lambda_i^2 = 1$. 施密特分解可由奇异值分解得来，我们只需将SVD分解应用在$\{c_{i,j}\}$上，
@@ -154,6 +154,21 @@ A = U \Lambda V^\dagger
 		 &= \sum_{i=1}^{\chi} \lambda_i \ket{i_A}\ket{i_B}
 \end{align}
 矩阵$\left\{c_{i,j}\right\}$的秩$\chi$在这里被称为施密特秩，被某一表象下的$\ket{\varphi}$唯一确定。施密特秩可以用来衡量两体系统之间纠缠状态数的多少，也经常会出现在对多体系统的分析中。
+
+\subsubsection{纠缠熵}
+
+在零温时，纯态量子系统的冯诺依曼熵为零，但选取一部分子系统单独查看，其熵可能不为零。这部分仅仅由量子系统的纠缠产生的熵被定义为冯诺依曼纠缠熵\cite{eisertColloquiumAreaLaws2010}
+\begin{equation}
+\mathcal{S}(\rho_A) = -\Tr(\rho_A\log\rho_A) = -\Tr(\rho_B\log\rho_B)
+\end{equation}
+其中$A,B$是系统一分为二的两部分，$\rho_A$是密度矩阵对$B$系统求部分迹得到的约化密度矩阵，反之同理。若利用施密特分解将系统$\ket\varphi$分为(\ref{eq-sd-phi})中的两部分，则冯诺依曼纠缠熵可以表达为
+\begin{equation}
+\mathcal{S} = -\sum_i^\chi \lambda_i^2\log\left(\lambda_i^2\right)
+\end{equation}
+
+纠缠熵是一个用来衡量量子系统纠缠大小的物理量。一个具有纠缠的基态的强关联系统有时能表现出特殊的集体量子行为\cite{vidalEntanglementQuantumCritical2003}，因此纠缠熵在研究强关联系统时有重要意义。
+
+通常情况下，基态附近的
 
 \subsubsection{多体系统}
 通常情况下，我们会遇到由$N$粒子构成的量子多体系统，其每一个粒子具有维度为$p$的态空间。最常见的例子即是一个由自旋$\frac12$的粒子组成的$N$粒子自旋系统，其$p=2$. 要表示这样的量子态，我们可以选择单体$S_z$算符的本征态$\ket{j_k}$为每个粒子态空间的基，这样整体态空间的基可由每个粒子态空间基的直积构成，整体的态矢$\ket{\varphi}\in\left(\mathbb{C^d}\right)^{\otimes N}$表示为
@@ -183,7 +198,7 @@ A = U \Lambda V^\dagger
 
 
 \subsubsection{VBS态}
-另一种看待MPS的方式是通过 Valance Bond States \cite[8]{dongZhangLiangWangLuoSuanFaCongBoSeZiXiTongDaoFeiMiZiXiTong2017}来构造系统的量子态。我们考虑上文中一维周期边界条件上的自旋链，每个格点上由两个相同的自由度为$D$的粒子$a_i$与$b_i$，每个粒子与相邻格点形成最大纠缠态
+另一种定义MPS的方式是通过 Valance Bond States \cite[8]{dongZhangLiangWangLuoSuanFaCongBoSeZiXiTongDaoFeiMiZiXiTong2017}来构造系统的量子态。我们考虑上文中一维周期边界条件上的自旋链，每个格点上由两个相同的自由度为$D$的粒子$a_i$与$b_i$，每个粒子与相邻格点形成最大纠缠态
 \begin{equation}
 \ket{\varphi(b_i a_{i+1})} = \ket{I} = \sum_{\alpha=1}^D \ket{\alpha,\alpha},
 \end{equation}
@@ -191,26 +206,24 @@ A = U \Lambda V^\dagger
 \begin{equation}
 \ket{\varPhi} = \ket{I}^{\otimes N}
 \end{equation}
-构成。此时我们可以把每一对粒子$a_i,b_i$构成的大的希尔伯特空间投影到真实的单粒子希尔伯特空间，在第$n$个格点考虑我们需要用到的投影算符$A(n)$
+构成。每一对粒子$a_i,b_i$构成比原先单粒子空间更大的希尔伯特空间。在构造完成后，我们需要将非物理的自由度排除，使其回到原先的空间，因此在第$n$个格点考虑我们需要用到的投影算符$A(n)$
 \begin{equation}
 A(n) = \sum_{i=1}^p\sum_{\alpha,\beta=1}^D {A(n)}^i_{\alpha,\beta}\ket{i}\bra{\alpha,\beta}
 \end{equation}
-将其逐点作用在$\ket\varPhi$上，我们便得到了与(\ref{MPS_PBC})相同的量子态$\ket\varphi$。公式中出现的$A(n)^i_{\alpha,\beta}$正是张量网络中出现的张量$A_n$的各个分量。
+将其逐点作用在$\ket\varPhi$上\cite[16]{bridgemanHandwavingInterpretiveDance2017}，我们便得到了与(\ref{MPS_PBC})相同的量子态$\ket\varphi$。公式中出现的$A(n)^i_{\alpha,\beta}$正是张量网络中出现的张量$A_n$的各个分量。这里使用的边界条件为周期边界条件，对于开边界条件也可类似构造
 \subsubsection{性质}
 
-\paragraph{平移对称性}
+\paragraph{边界条件}
 
-开边界条件下，MPS不具有平移对称性，因为原则上它的每个张量都可以是不同的。若我们将系统由指定的元胞无限平移而成，那么MPS应使用周期边界条件，使其等效于张量网络由指定张量序列无限平移形成，它可以具有我们所表示系统的平移对称性。
+开边界条件下，MPS不具有平移对称性，因为原则上它的每个张量都可以是不同的。在周期边界条件下，我们将系统由指定的元胞无限平移而成，那么对应的张量网络也看做由指定张量序列无限平移形成的极限，它可以具有我们所表示系统的平移对称性。
 
 \paragraph{纠缠熵面积定律}
 
-纠缠熵是一个用来衡量量子系统纠缠大小的物理量。一个具有高度纠缠的基态的强关联系统往往能表现出特殊的集体量子行为\cite{vidalEntanglementQuantumCritical2003}，因此纠缠熵在研究强关联系统时有重要意义。
-
-纠缠熵面积定律指出，张量网络子系统间的纠缠熵仅仅与子系统边界有关。MPS遵守纠缠熵面积定律，由于是一维系统，其边界是零维的端点，因此其边界与系统规模无关，纠缠熵$S(L)=-\Tr\left(\rho_L\log\rho_L\right)=\mathrm{O}(\log D)$为常数\cite{PracticalIntroductionTensor2014},其中$\rho_L$为子系统$L$的约化密度矩阵。
+纠缠熵面积定律指出，张量网络子系统的纠缠熵仅仅与子系统边界有关。MPS遵守纠缠熵面积定律，由于是一维系统，其边界是零维的端点，因此其边界与系统规模无关，纠缠熵$\mathcal{S(L)}=-\Tr\left(\rho_L\log\rho_L\right)=\mathrm{O}(\log\! D)$为常数\cite{PracticalIntroductionTensor2014},其中$\rho_L$为子系统$L$的约化密度矩阵。
 
 纠缠熵面积定律是张量网络能够有效表示量子态的原理所在。对于有能隙的系统，其基态总是遵守纠缠熵面积定律，而任何遵守纠缠熵面积定律的量子态都能被MPS所表示\cite{eisertEntanglementTensorNetwork2013}。这就解释了为何MPS可以用更少的参数表示量子态：当我们关注系统在基态附近的性质时，系统所处的量子态只能是那些遵循纠缠熵面积定律的量子态，这些态都可以被MPS表示，系统的参数在面积定律的约束下大大减少。
 
-\paragraph{有限关联长度}
+\paragraph{关联长度有限}
 
 两体关联反应一个算符在不同位置处时其期望值的相关程度
 \begin{equation}
@@ -218,17 +231,48 @@ C(r) = \langle O_i O'_{i+r}\rangle - \langle O_i\rangle\langle O'_{i+r}\rangle
 \end{equation}
 在文献~\inlinecite{PracticalIntroductionTensor2014}的130页中给出了一个简单的例子，证明了一个长度为一的在MPS周期边界条件下关联函数是指数下降的。这种指数下降在一维有能隙系统中普遍存在，这侧面反映了为何MPS能很好的表示这种系统。反之，对处于相变点附近具有趋于无穷的关联长度的系统，MPS无法表示。
 
+\paragraph{精确缩并复杂度}
+
+计算两个MPS态的内积，即缩并两个MPS，其时间复杂度总可以达到$\mathrm{O}(NpD^3)$. 这个性质不难理解，因为我们的计算难度与计算$N$个矩阵的乘积并无本质区别。正是如此，我们的MPS算法可以高效运行，或者说不同于时间复杂度指数增加的算法，MPS上的算法计算大系统是可接受的。
 
 \subsection{投影纠缠态}
 \subsubsection{描述}
 
 矩阵直积态利用多体系统基态的特点对多体系统的整个希尔伯特空间做了近似，并因此能够高效的描述一维多体系统。将这种方法推广到二维系统的一个尝试便是投影纠缠态(Projected Entangled Pair States, PEPS)，它是许多二维格点算法的基础。同上文中矩阵乘积态的思想一致，我们希望将(\ref{eq-1.6})中系数构成的张量分解为小张量的缩并来减少参数。若我们的系统是一个$N\times M$的方形格点，我们可以按与系统格点相同的方式分解张量，图——————————
 \begin{equation}\label{PEPS_PBC}
-\ket{\varphi} = \sum_{\{j\}} \Tr\left( A^{(1,1)}_{j_{1,1}} A^{(1,2)}_{j_{1,2}}\dots A^{(N,M)}_{j_{N,M}} \right)\ket{j_{1,1} j_{1,2}\dots j_{N,M}}
+\ket{\varphi} = \sum_{\{j\}} \Tr\left[ A{(1,1)}^{j_{1,1}} A{(1,2)}^{j_{1,2}}\dots A{(N,M)}^{j_{N,M}} \right]\ket{j_{1,1} j_{1,2}\dots j_{N,M}}
 \end{equation}
-这里的每个$A^{(n,m)}_{j_{n,m}}$都是一个$4$阶张量，含有四个与周围张量缩并的键，整体上每个格点对应一个$5$阶张量$A^{(n,m)} = A^{n,m}(l,r,u,d,j_{n,m})$，只有一个悬空脚为$j_{nm}$.
+这里的每个$A{(n,m)}^{j_{n,m}}$都是一个$4$阶张量，含有四个与周围张量缩并的键，整体上每个格点对应一个$5$阶张量$A{(n,m)} = A_{n,m}(l,r,u,d,j_{n,m})$，只有一个悬空脚为$j_{nm}$.
 
-另外还有一种看待投影纠缠态的方式，是通过将PEPS看做高维希尔伯特空间中最大纠缠态的投影。我们考虑在系统的每个格点上共有
+\subsubsection{VBS态}
+
+另外还有一种看待投影纠缠态的方式，是像上文中MPS那样将PEPS看做由高维希尔伯特空间中最大纠缠态投影得到的VBS态。我们考虑在系统的每个格点上共有4个虚拟的自由度为$D$的粒子，分别与上下左右的格点中的相邻粒子成键，类似的构造
+\begin{equation}
+A(n,m) = \sum_{i=1}^p\sum_{l,r,u,d=1}^D {A(n,m)}^i_{l,r,u,d}\ket{i}\bra{\alpha,\beta}
+\end{equation}
+便可得到(\ref{PEPS_PBC})中的结果
+
+\subsubsection{性质}
+
+\paragraph{边界条件}
+
+对于开边界条件的PEPS，每个张量都可以是不同的，无平移对称性。对于周期边界条件的PEPS，我们的系统被看做由我们适当选择的元胞无限平移而成的2维晶格，因此张量网络对于任意格矢的平移都是对称的，它实际上表示了系统趋于无穷大时的极限状态。另外由于PEPS是2维的，我们可以选择某个方向为周期边界条件而另一个方向为开边界条件\cite[3]{osorioireguiInfiniteMatrixProduct2017}，其图表示类似于圆柱体，这里不再展开说明。
+
+\paragraph{纠缠熵面积定律}
+
+纠缠熵面积定律适用于张量网络，但PEPS中的纠缠熵面积定律为2维形式，即任意子系统的纠缠熵正比于分割子系统的周长。若一个子系统的边界长为$L$，那么纠缠熵$\mathcal{S}(L)=\mathrm{O}(L\log\!D)$，其中$D$为上文中设置的键的维度，也可理解为VBS中设置的相邻系统之间的纠缠程度。
+
+同MPS一样，PEPS的纠缠熵面积定律保证了其有能力表示有能隙系统的基态以及低能激发态。
+
+\paragraph{关联函数多项式衰减}
+
+PEPS与MPS之间一个很大的不同便是PEPS中两点之间的关联是随距离多项式衰减的，而上文的MPS是指数衰减的。仅仅这一项不同就使得PEPS具有了MPS不同的性质：从原理上来说PEPS不仅可以描述有能隙态，还可以描述临界态。呈多项式衰减的关联是临界系统的一大特征，因为临界系统具有标度不变性，其关联长度可以趋于无穷大\cite[138]{PracticalIntroductionTensor2014}。上文所说的MPS无法描述临界系统便是因为其关联长度永远是有限的，无法具有临界系统的特征。
+
+\paragraph{精确缩并复杂度}
+
+不论我们用什么顺序计算两个PEPS之间的缩并，其时间复杂度均是$\mathrm{O}\left(\exp(N)\right)$的\cite[139]{PracticalIntroductionTensor2014}。这一论断可被数学精确证明，它告诉我们尝试计算两个PEPS之间的缩并是低效的，对大系统来说更是不现实的。目前计算PEPS多采用近似算法，例如边界MPO缩并近似\cite{lubaschUnifyingProjectedEntangled2014}等。
+
+
 ------------------------分割线------------------------
 \paragraph{四级节标题}
 
