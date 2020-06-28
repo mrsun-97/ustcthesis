@@ -1,9 +1,8 @@
 % !TeX root = ./main.tex
 
 \ustcsetup{
-  title              = {基于方差缩减随机梯度下降法的\\张量网络优化算法},
-  title*             = {An example of thesis template for University of Science
-                        and Technology of China},
+  title              = {张量网络优化算法},
+  title*             = {Optimization Algorithms of \\Tensor Network},
   author             = {孙玉鑫},
   author*            = {Sun Yuxin},
   speciality         = {凝聚态物理},
@@ -26,7 +25,10 @@
 \usepackage[ruled,linesnumbered]{algorithm2e}
 \usepackage{siunitx}
 \usepackage{amsthm}
-
+\usepackage{mathtools}
+\DeclarePairedDelimiter\bra{\langle}{\rvert}
+\DeclarePairedDelimiter\ket{\lvert}{\rangle}
+\DeclarePairedDelimiterX\braket[2]{\langle}{\rangle}{#1 \delimsize\vert #2}
 
 % 数学命令
 \input{math-commands.tex}

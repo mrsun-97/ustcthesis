@@ -8,10 +8,7 @@
 
 % 加载宏包、全部的配置
 \input{ustcsetup.tex}
-\usepackage{mathtools}
-\DeclarePairedDelimiter\bra{\langle}{\rvert}
-\DeclarePairedDelimiter\ket{\lvert}{\rangle}
-\DeclarePairedDelimiterX\braket[2]{\langle}{\rangle}{#1 \delimsize\vert #2}
+
 
 \begin{document}
 
@@ -41,8 +38,8 @@
 
 \mainmatter
 \input{chapters/intro.tex}
-\input{chapters/floats.tex}
-\input{chapters/math.tex}
+\input{chapters/algorithms.tex}
+\input{chapters/output.tex}
 \input{chapters/citations.tex}
 
 \backmatter
@@ -50,11 +47,11 @@
 % \bibliographystyle{ustcthesis-authoryear} % 著者出版年制
 \bibliographystyle{ustcthesis-bachelor}   % 本科生参考文献的格式
 \bibliography{bib/ustc}
-\bibliography{bib/ustc2}
+%\bibliography{bib/ustc2}
 
 \appendix
 \input{chapters/complementary.tex}
 
-\input{chapters/publications.tex}
+%\input{chapters/publications.tex}
 
 \end{document}

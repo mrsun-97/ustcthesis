@@ -1,0 +1,280 @@
+% !TeX root = ../main.tex
+
+\chapter{张量网络算法}
+
+\section{张量网络的求基态算法}
+
+上一章的内容主要集中在张量网络的定义以及性质上，没有涉及到具体的算法；本章将基于MPS介绍张量网络上的常用算法，并为下一章的算法改进做铺垫。
+
+\subsection{虚时演化算法}
+
+一个量子系统$\ket{\psi}$在能量表象下可写为
+\begin{equation}
+\ket{\psi} = c_0\ket{0} + c_1\ket{1} + c_2\ket{2} + \cdots
+\end{equation}
+其中假设每个能量本征态有$0\leq E_0\leq E_1\leq \cdots$，$\ket{0}$为其非简并基态。一般情况下我们研究的系统哈密顿量不含时，因此时间演化算符可表示为$\hat{\symbf{U}} = \exp\left(-i\hat{\symbf{H}}t\right)$. 利用时间演化算符可以得到任意时刻的量子态为
+\begin{align}
+\hat{\symbf{U}}(t)\ket{\psi} &= e^{-i\hat{H}t}\left(c_0 \ket{0} + c_1\ket{1} + c_2\ket{2} + \cdots\right)\\
+		&= c_0 e^{-iE_0 t}\ket{0} + c_1 e^{-iE_1 t}\ket{1} + c_2 e^{-iE_2 t}\ket{2} + \cdots\\
+		&= e^{-iE_0 t}\left( c_0\ket{0} + \sum_{n=1}c_n e^{-i(E_n-E_0)t}\ket{n} \right)
+\end{align}
+在上述公式中，我们对其进行一个数学处理，即令$t=-i\tau,\,\tau\in\mathrm{R}$，我们得到一个新的公式
+\begin{equation}
+\hat{\symbf{U}}(-i\tau)\ket{\psi} =  e^{-\tau E_0}\left( c_0\ket{0} + \sum_{n=1}c_n e^{-\tau(E_n-E_0)}\ket{n} \right)
+\end{equation}
+在正常的时间演化中，每个能量本征态的系数在复平面内转动，呈周期性变化；而在虚时演化中，每一项均是指数衰减的。进一步的定义虚时间演化算符
+\begin{equation}
+\hat{\symbf{U}}_I(\tau) = \hat{\symbf{U}}(-i\tau)e^{\tau E_0}
+\end{equation}
+可得量子态随时间变化
+\begin{equation}
+\hat{\symbf{U}}_I(\tau)\ket{\psi} = c_0\ket{0} + \sum_{n=1}c_n e^{-\tau(E_n-E_0)}\ket{n} \longrightarrow c_0\ket{0}\;(t\to\infty)
+\end{equation}
+随着长时间的演化，系统从初态逐渐演化到基态。需要注意的是$\hat{U}_I$不是酉算符，结果需要进行归一化；且初态有一个要求为$\braket{\psi}{0}\neq 0$.
+
+在张量网络中，$\hat{\symbf{U}}$是一个整体的算符，也被看做一个张量，计算其作用在张量网络上的结果时计算复杂度较高，因此我们采用与上文同样的思想，将其分解为小张量表示。首先我们将演化时间分割为小段
+\begin{equation}
+e^{-it\hat{\symbf{H}}} = \left(e^{-i\hat{\symbf{H}}\increment t}\right)^N
+\end{equation}
+另外在我们研究的体系如伊辛模型、海森堡模型中，体系的哈密顿量均是由相邻粒子间的两体哈密顿量组成的$\hat{\symbf{H}}=\hat{\symbf{h}}_1 + \hat{\symbf{h}}_2 + \cdots+ \hat{\symbf{h}}_m$. 我们利用一阶Trotter展开将上式展开
+\begin{align}
+	e^{-i\increment t \hat{\symbf{H}}} &= e^{-i\increment t \sum_{i=1}^m \hat{\symbf{h}}_i}\\
+			&= e^{-i\hat{\symbf{h}}_1\increment t}e^{-i\hat{\symbf{h}}_2\increment t}\cdots e^{-i\hat{\symbf{h}}_m\increment t} + \mathcal{O}(\increment t^2)
+\end{align}
+之后便可以将两体算符$\exp(-i\hat{\symbf{h}}_k\increment t)$按一定的规则作用在MPS上，而不必直接计算整个多体算符如何直接与张量网络作用。基于上面的展开式，有两种常用的时间演化算法,其在处理两体算符的作用方式上有不同之处，这两种方法分别被称作tMPS\cite[75]{schollwoeckDensitymatrixRenormalizationGroup2011}与TEBD\cite{vidalClassicalSimulationInfiniteSize2007}。在此基础上做上文提到的虚时间处理，就可以得到对应的虚时演化求基态算法。以上算法既适用于有限系统，又适用于有周期边界条件的一维无穷大系统，也可以扩展至PEPS中。由于详细的解释算法原理篇幅过长，且与本文相关性不大，这里就不再深入解释。
+
+\subsection{变分法}
+
+求体系基态的一个经典算法便是变分法\cite{ErWeiLiangZiDuoTiXiTongDeZhangLiangWangLuoTaiSuanFaZhongGuoBoShiXueWeiLunWenQuanWenShuJuKu}。在量子系统中，我们已经知道系统的哈密顿量$\hat{\symbf{H}}=\hat{\symbf{h}}_1 + \hat{\symbf{h}}_2 + \cdots+ \hat{\symbf{h}}_{N-1}$，且知道系统的变分波函数的表示形式为MPS：
+\begin{equation}
+\ket{\varphi} = \sum_{s_1\dots s_N}\Tr\left(\symbf{A}^{s_1}\symbf{A}^{s_2}\dots \symbf{A}^{s_N}\right)\ket{s_1 s_2\dots s_N}
+\end{equation}
+那么我们便可以利用变原理求系统$E$对$\ket{\varphi}$的极小值：
+\begin{equation}
+E_{\text{gs}}=\min_{\ket{\varphi}}E(\ket{\varphi}) = \min_{\ket{\varphi}}\frac{\bra{\varphi}\symbf{H}\ket{\varphi}}{\braket{\varphi}{\varphi}}
+\end{equation}
+其中量子态需要满足归一化条件，因此引入拉格朗日乘子$\lambda$，上述问题转化为
+\begin{equation}
+\min_{\ket{\varphi}}\!\big( \bra{\varphi}\symbf{H}\ket{\varphi} - \lambda\braket{\varphi}{\varphi} \big)
+\end{equation}
+其中表示量子态的全部参数都在构成MPS的张量中，因此$\ket{\varphi}$是$\{\symbf{A}^{s_i}\}$的函数。我们令
+\begin{equation}\label{key}
+\frac{\partial}{\partial A^{s_i}_{l,r}}\big( \bra{\varphi}H\ket{\varphi} - \lambda\braket{\varphi}{\varphi} \big) = 0
+\end{equation}
+这是一个关于所有矩阵元的方程，联立便可解得系统的基态。
+
+通常情况下，关于矩阵元$A^{s_i}_{l,r}$的方程是高度非线性的，且自变量均耦合在一起，因此即使借助计算机的力量我们也很难直接解得基态。对于这种难以直接求解的方程组，一个解决办法便是使用迭代法。结合我们的MPS形式，我们可以使用这样一种迭代法：我们先把第一个格点对应的矩阵$\symbf{A}^{s_1}$当作自变量，其他格点的矩阵看做已知量，这样一来我们的方程中做多出现未知数的平方项，问题便成为了一个容易求解的二次型问题。我们求解出$\symbf{A}^{s_1}$后，再用同样的方法求解$A^{s_2}$，并进一步求解其他格点对应的矩阵。我们每求出一个新的解，新的系统能量便会下降一点，通过不断的迭代使得系统的能量收敛，我们便得到了系统的基态能量与基态波函数。此方法同样可以应用到PEPS上。
+
+\subsection{梯度下降法}
+
+对于PEPS的严格缩并的时间复杂度是随键的维度$D$指数上升的，因此优化PEPS波函数一直存在相当的难度。人们提出了很多近似的缩并方法，使得时间复杂度降低为多项式级，但仍至少有$\mathcal{O}(D^{10})$。如此大的指数使得在实际的计算中时间复杂度随设定的$D$的大小仍快速增大，在实际的计算中我们仍然只能取较小的$D$值。为了减少计算复杂度，人们提出了SU方法，其使得计算复杂度减小至$\mathcal{O}(D^{5})$\cite{wangMonteCarloSimulation2011}，但由于计算时对目标张量周围的环境过度的简化，其计算精度大大下降。
+
+计算PEPS的缩并来得到物理量的方法，都需要在计算开销与计算精度之间做取舍，为此人们又想出了蒙特卡洛抽样算法，这是一种利用抽样来计算物理量的方法。随机梯度下降法结合蒙特卡洛抽样算法———一种以放弃确定解为代价大大提高缩并计算速度的方法，成为可以提高计算速度，且可以大规模并行的方法。这里我们仍先利用MPS简化问题，介绍梯度优化方法。
+
+\subsubsection{蒙特卡洛采样}
+
+在梯度优化法之前，人们就已经发明了蒙特卡洛采样技术，采样法通过对随机的自旋构型进行抽样，代替了对整个系统的遍历操作。通过在张量网络中引入蒙特卡洛抽样\cite{liuGradientOptimizationFinite2017,wangMonteCarloSimulation2011,sandvikVariationalQuantumMonte2007}，我们可以将与严格缩并有关的计算复杂度大大简化。
+
+
+若我们有实数域中MPS表示的量子态
+\begin{equation}\label{key}
+\ket{\varphi} = \sum_{s_1\dots s_N}\Tr\left(\symbf{A}^{s_1}\symbf{A}^{s_2}\dots \symbf{A}^{s_N}\right)\ket{s_1 s_2\dots s_N}
+\end{equation}
+其能量表达式为
+\begin{equation}\label{key}
+E = \frac{\bra{\varphi}\symbf{H}\ket{\varphi}}{\braket{\varphi}{\varphi}}
+\end{equation}
+我们可以在其中插入单位算符$\symbf{I}=\sum_{S}\ket{S}\bra{S}$，得到
+\begin{align*}
+E &= \frac{\sum_{S,S'}\braket{\varphi}{S'}\bra{S'}\symbf{H}\ket{S}\braket{S}{\varphi}}{\sum_S\braket{\varphi}{S}\braket{S}{\varphi}}\\
+	&= \frac{\sum_{S,S'}W\!(S')\bra{S'}\symbf{H}\ket{S}W\!(S)}{W\!(S)^2}\\
+	&= \frac{1}{Z}\sum_S W\!(S)^2 E(S)
+\end{align*}
+得到配分函数的形式。
+其中
+\begin{equation}
+Z = \sum_S W\!(S)^2
+\end{equation}
+\begin{equation}
+W\!(S) = \braket{S}{\varphi} = \Tr\left(\symbf{A}^{s_1}\symbf{A}^{s_2}\dots \symbf{A}^{s_N}\right)
+\end{equation}
+\begin{equation}
+E(S) = \sum_{S'}\frac{W\!(S')}{W\!(S)}\bra{S'}\symbf{H}\ket{S}
+\end{equation}
+这里$\ket{S}$指的是自旋构型$\ket{s_1 s_2\dots s_N}$中的一个构型，对$S,S'$等指标求和时要遍历所有自旋构型。下文中我们将$\symbf{A}^{s_m}_m$的矩阵元$(A^{s_m}_m)_{l,r}$简记为$A^{s_m}_{lr}$
+
+\subsubsection{计算能量梯度}
+计算能量$E$对矩阵元的导数\cite[3]{liuGradientOptimizationFinite2017}，暂时略去$A$的指标，可得
+\begin{align*}
+\frac{\partial E}{\partial A^{s_m}_{lr}} &= \frac{\partial}{\partial A}\left(\frac{1}{Z}\sum_S W\!(S)^2 E(S)\right)\\
+		&= \frac{1}{Z} \frac{\partial}{\partial A} \left(\sum_S W\!(S)^2 E(S)\right) + \frac{\partial}{\partial A}\!\left(\frac{1}{Z}\right)\sum_S W\!(S)^2 E(S)\\
+		&= \frac{1}{Z} \sum_S 2W\!(S)\frac{\partial W\!(S)}{\partial A} E(S) - \frac{1}{Z^2}\frac{\partial Z}{\partial A} \sum_S W\!(S)^2 E(S)\\
+		&= 2\,\frac{1}{Z}\!\sum_S W\!(S)^2\left(\frac{1}{W\!(S)}\frac{\partial W\!(S)}{\partial A}\right) E(S) \\
+			&\quad - \frac{1}{Z^2}\frac{\partial}{\partial A}\left(\sum_S W\!(S)^2\right) \sum_S W\!(S)^2 E(S)\\
+		&= 2\,\frac{1}{Z}\!\sum_S W\!(S)^2\Delta(S) E(S) \\
+		&\quad - 2\,\frac{1}{Z^2}\! \sum_S W\!(S)^2\Delta(S) \sum_S W\!(S)^2 E(S)\\
+		&= 2\langle{\Delta}^{s_m}_{lr}(S)E(S)\rangle -  2\langle{\Delta}^{s_m}_{lr}(S)\rangle\langle E(S)\rangle
+\end{align*}
+即
+\begin{equation}\label{eq-gradient}
+\frac{\partial E}{\partial A^{s_m}_{lr}} = 2\langle{\Delta}^{s_m}_{lr}(S)E(S)\rangle -  2\langle{\Delta}^{s_m}_{lr}(S)\rangle\langle E(S)\rangle
+\end{equation}
+上式中的$\langle\cdots\rangle$表示以$W\!(S)^2$为权重的蒙特卡洛采样得到的期望值，其中矩阵
+\begin{equation}
+\symbf{\Delta}^{s_m}(S)=\frac{1}{W(S)}\frac{\partial W(S)}{\partial \symbf{A}^{s_m}}=\frac{1}{W(S)}\Tr\left(\symbf{A}_1^{s_1}\dots \symbf{A}_{s_{m-1}}^{s_{m-1}}\symbf{A}_{m+1}^{s_{m+1}}\dots \symbf{A}_N^{s_N}\right)
+\end{equation}
+得到梯度后，便可以根据一般的梯度下降算法，对波函数进行优化
+\begin{equation}
+A^{s_m}_{lrud}(n+1) = A^{s_m}_{lrud}(n) - p\cdot\delta t(n)\cdot \sign\left(\frac{\partial E}{\partial A^{s_m}_{lrud}}\right)
+\end{equation}
+其中$\delta t(n)$为第$n$步的步长。这里$p\in [0,1]$为随机变量，只利用梯度的符号，是考虑到在局域极值较多时，一定程度的随机性可以使波函数跳出局域极值，是经过人们测试得到的经验做法。
+
+对于对$W(S)^2$的抽样，我们可以将其当作一个体系的配分函数，利用马尔科夫链上的细致平衡条件做重要抽样，得到由自旋构型组成的马尔科夫链，其自旋构型的分布自然地满足$W(S)^2$的广义概率分布。
+
+借助上面的表达式，我们对能量梯度的计算就变为对抽样得到的随机构型下矩阵的缩并，即计算一系列矩阵$A_m^{s_m}$的乘积。以上的推导在PEPS中仍然成立，形式上只需将矩阵$A^{s_m}_{lr}$变为张量$A^{s_m}_{lrud}$即可。在计算的时间复杂度上，计算单层张量网络的缩并时MPS与矩阵乘法相同，为$\mathcal{O}(D^3)$；而PEPS则为$\mathcal{O}(D^6)$. 通常情况心下，梯度优化法作为一个全局优化算法，用来优化由虚时演化等方法得到的粗略的基态波函数，得到更精确的解。
+
+\section{梯度下降算法的优化}
+
+\subsection{随机梯度下降}
+
+在张量网络中，我们为了更高效的计算出基态，采用了与蒙特卡洛抽样算法结合的梯度下降算法，其本质上为随机梯度下降算法\cite[22]{bottouOptimizationMethodsLargeScale2018}
+\begin{algorithm}[htb]
+	\SetKwData{Left}{left}
+	\SetKwData{This}{this}
+	\SetKwData{Up}{up}
+	\SetKwFunction{Union}{Union}
+	\SetKwFunction{FindCompress}{FindCompress}
+	\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+	
+	\Input{待下降函数$f(w_k)$,梯度$g(w_k,\xi_k)$,初态$w_1$}
+	\Output{末态$w^*$以及函数值$f(w^*)$}
+	
+	初始化随机数，输入初态$w_1$\;
+	\For{$k=1,2,\dots $}{
+		生成随机数$\xi_k$\;
+		计算随机梯度$g(w_k,\xi_k)$\;
+		选择步长$\alpha_k \ge 0$\;
+		将新的状态设置为$w_{k+1}\leftarrow w_k-\alpha_k g(w_k.\xi_k)$.
+	}
+	\caption{随机梯度下降(Stochastic Gradient, SG)算法}
+	\label{algo:algorithm1}
+\end{algorithm}
+
+现假设我们的待下降函数(损失函数)具有以下形式
+\begin{equation}\label{eq-sum-form}
+R(w)=\mathrm{E}[f(w);\xi]
+\end{equation}
+其可能的最小值为$R^*$. 
+定义样本均值为
+\begin{equation}\label{key}
+R_n(w)=\frac1n \sum_{i=1}^n f_i(w)
+\end{equation}
+其中我们在一次抽样中获得样本随机数$\left\{\xi_{[i]}\right\}_{i=1}^n$，第$i$个样本为$f_i(w)=f(w;\xi_{[i]})$。如果我们不使用随机梯度下降，而是使用通常的全梯度下降，每次计算出函数精确的梯度，即$g(w)=\nabla R(w)$，那么存在一个常数$\rho\in(0,1)$使得算法的收敛速度为
+\begin{equation}\label{key}
+R_n(w_k)-R_n^* \leq \mathcal{O}(\rho^k)
+\end{equation}
+在最差的情况下，将误差减小至给定的$\epsilon> 0$的工作量为$\mathcal{O}(n\log(1/\epsilon))$.
+
+如果使用随机梯度下降，则收敛速度相比之下没有使用精确梯度时那样快
+\begin{align}\label{key}
+\mathrm{E}[R_n(w_k)-R_n^*]&=\mathcal{O}(\frac1k)\\
+\mathrm{E}[R(w_k)-R^*]&=\mathcal{O}(\frac1k)
+\end{align}
+并且需要步长$\alpha_k=\mathcal{O}(1/k)$. 但是由于每次计算梯度时的开销是随机抽样得到，当系统规模增大时计算梯度的开销往往不发生变化，因此将误差减小至指定$\epsilon$时的工作量是$\mathcal{O}(1/\epsilon)$的，随机梯度下降算法在系统规模较大时往往具有更大的优势。
+
+对强凸函数条件下随机梯度下降法的分析\cite[27]{bottouOptimizationMethodsLargeScale2018}指出，该算法在最小值附近会有一定的不确定性，损失函数不能完全收敛到最小值
+\begin{equation}\label{eq-convergence1}
+\mathrm{E}\left[R(w_{k})-R^*\right]\leq KM+\mathcal{O}(\rho^k)
+\end{equation}
+其中$M$为算法中梯度函数的方差的最小上界，在最小值$w^*$邻域内，$M=\Var_\xi\big(g(w^*;\xi)\big)$仍不为零。当我们需要比较精确的最小值时，随机梯度下降牺牲准确度来提高每一步计算速度的方法就会适得其反。
+
+\subsection{方差缩减算法}
+
+是否存在这样的算法，使得其在节省计算开销的同时保证结果收敛至最小值？实际上答案是肯定的，这需要我们对算法进行一定的改进。
+
+在公式(\ref{eq-convergence1})中，随机梯度下降算法在算法刚开始进行时使得损失函数能够充分下降，但在接近收敛时，由于方差的上界$M$始终不为零，算法的结果与真实最小值之间便存在一个无法缩小的区间，我们无法证明函数值与真实最小值的差落入区间后还能继续缩小。我们希望构造这样一种算法，其使得梯度$g(w_k;\xi_k)$的方差能够随着$\lvert w_k-w^*\rvert^2$的缩小也不断缩小至零，这样我们便可以将$M$缩小至零，具有此性质的算法也可以保证最终结果收敛至最小值。
+
+\subsubsection{SVRG算法}
+
+SVRG(Stochastic Variance Reduced Gradient)\cite{johnsonAcceleratingStochasticGradient}算法对原始的随机梯度下降进行了改进，在保持了每一步计算开销较小的同时保证了损失函数收敛于其最小值。其主要特征与其名字相同，便是在算法进行的过程中，损失函数的梯度的方差会逐渐收敛至零。当算法的方差能够收敛至零时，其函数值则因为上文中公式的限制也被控制到趋向于零。
+
+对于问题
+\begin{equation}\label{key}
+\min P(w)\,,\quad P(w)=\frac1n \sum_{i=1}^n \psi_i(w)
+\end{equation}
+SVRG中构造出了新的梯度函数，新的算法由双重循环构成：
+
+\begin{algorithm}[htb]
+	\SetKwData{Left}{left}
+	\SetKwData{This}{this}
+	\SetKwData{Up}{up}
+	\SetKwFunction{Union}{Union}
+	\SetKwFunction{FindCompress}{FindCompress}
+	\SetKwInOut{Input}{input}
+	\SetKwInOut{Output}{output}
+	
+	\Input{待求问题$P$，更新频率$m$与学习速率$\eta$}
+	\Output{末态$w^*$以及函数值$P(w^*)$}
+	
+	初始化随机数，输入初态$\tilde{w}_0$\;
+	\For{$s=1,2,\dots $}{
+		$\tilde{w}=\tilde{w}_{s-1}$\;
+		$\tilde{\mu} = \frac1n \sum_{i=1}^n\nabla\psi_i(\tilde{w})$\;
+		$w_0=\tilde{w}$\;
+		\For{$t=1,2,\dots,m$}{
+			随机选取$i_t\in\{1,\dots,n\}$\;
+			$g_{t-1}=\nabla\psi_{i_t}(w_{t-1})-\nabla\psi_{i_t}(\tilde{w}) + \tilde{\mu}$\;
+			更新$w_t = w_{t-1}-\eta g_{t-1}$\;
+		}
+		$\tilde{w}_s=w_m$
+	}
+	\caption{SVRG算法}
+	\label{algo:algorithm1}
+\end{algorithm}
+
+为了说明在新的梯度更新规则下，梯度函数的方差趋向于零，我们首先指出$\tilde{w}$与$w_t$均趋向于一个相同的数$w^*$，此时有$\tilde{\mu}\to 0$. 当函数接近收敛时，$\tilde{w}\to w_t$，由函数的连续性得$\psi_i(w_t)\to\psi_i(\tilde{w})$. 因此上文中$g_t$将收敛至零。显然当$w_t$收敛至$w^*$时，$g_t$的涨落也将随自身数值趋于零而趋于零，因此$M\to 0$. 在公式(\ref{eq-convergence1})的控制下，函数值将严格收敛至最小值。
+
+在一般情况下，当我们的参数选择合适时，达到指定精度的步数为$\log(1/\epsilon)$，且在每个内循环中，梯度的计算与SGD相当，因此SVRG能够更高效的下降，即与全梯度下降具有相同收敛速率，且能达到更高的精度。但是SVRG也不是全方面优于SGD，在某些情况下SVRG计算一次全梯度的开销很大，这时进行一次完整的SVRG迭代的工作量已经可以完成多次SGD从而使得损失函数下降的更多。
+
+\subsubsection{其他算法}
+
+除了SVRG算法，还有SAG\cite{rouxStochasticGradientMethod}，SAGA\cite{hofmannVarianceReducedStochastic2016,defazioSAGAFastIncremental2014}等算法也采用了相同的思想，即在算法迭代的过程中控制梯度的方差趋于零。这些算法也具有相同的收敛速率与精度，但相比之下SVRG更适合应用到张量网络上。上文只着重介绍了SVRG算法，是为了下文中尝试将其应用至张量网络的梯度优化算法，也许其他梯度下降法中仍有许多深刻的原理可以应用，这需要大家进一步的研究。
+
+\subsection{张量网络与SVRG}
+
+在上节介绍的张量网络梯度优化算法中，给定张量的梯度可以抽象为$g(w_k;\xi_k)$，这里的$\xi_k$代表第$k$次抽样时得到的马尔科夫链对应的随机自旋样本。我们写出SVRG的形式
+\begin{equation}\label{key}
+\symbf{g}(w_k;\tilde{w},\xi)=\nabla\psi_{\xi}(w_{k})-\nabla\psi_{\xi}(\tilde{w}) + \nabla R(\tilde{w})
+\end{equation}
+其中的$R(w)$函数要保证在$w\to w^*$时方差为零，$\psi(w_k)$是连续的以保证$w_k\to w$时$\psi(w_k)\to\psi(w)$. 
+
+本文构造$\nabla R(w)$为张量网络的能量函数，$\nabla\psi_{\xi}(w_k)$为系统在$w_k$时$\xi$对应的马尔科夫链上的能量梯度。为了保证公式中两个$\psi$函数相同，他们应使用相同的马尔科夫链$\xi$来计算能量。当系统处于$\tilde{w}$态时，若我们抽样得到了马尔科夫链$\xi$，则在$w_k$时直接使用这个马尔科夫链得到的样本没有物理意义，这是因为张量网络产生变化，系统的量子态在不同自旋分量上的投影发生改变，原先的马尔科夫链不满足新的细致平衡条件。
+
+为了使原先概率分布下得到的马尔科夫链可以应用至新概率分布下得到有意义的物理量，我们介绍一种被称为reweighting的技术。假设一个物理量$A$的每个状态$A_i$出现的广义概率为$\rho_i$，则将其期望值在一个广义概率为$\rho'$的分布中表示的结果为
+\begin{align*}
+\langle A\rangle_\rho &= \frac{\sum_i \rho_i A_i}{\sum_i \rho_i}\\
+		&= \frac{\sum_i \frac{\rho_i}{\rho_i'}A_i\rho_i'}{\sum_i \rho_i'}\Bigg/\frac{\sum_i \frac{\rho_i}{\rho_i'}\rho_i'}{\sum_i \rho_i'}\\
+		&= \left\langle \frac{\rho}{\rho'}A\right\rangle_{\rho'} \Bigg/  \left\langle \frac{\rho}{\rho'}\right\rangle_{\rho'}
+\end{align*}
+上式中的$\rho_i$在张量网络中即为$W\!(S_i)^2$. 想求得在$w_k$对应的物理量,只需将$\tilde{w}$处算出的$W\!(S)^2$作为$\rho'$，$w_k$处的作为$\rho$，重新计算公式(\ref{eq-gradient})即可。
+
+
+
+
+\section{插图}
+
+有的同学可能听说“\LaTeX{} 只能使用 eps 格式的图片”，甚至把 jpg 格式转为 eps。
+事实上，这种做法已经过时。
+而且每次编译时都要要调用外部工具解析 eps，导致降低编译速度。
+所以我们推荐矢量图直接使用 pdf 格式，位图使用 jpeg 或 png 格式。
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.3\textwidth]{ustc-badge.pdf}
+  \caption{图号、图题置于图的下方}
+  \label{fig:badge}
+  \note{注：图注的内容不宜放到图题中。}
+\end{figure}
+
+关于图片的并排，推荐使用较新的 \pkg{subcaption} 宏包，
+不建议使用 \pkg{subfigure} 或 \pkg{subfig} 等宏包。
+
