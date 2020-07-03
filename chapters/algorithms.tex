@@ -75,8 +75,7 @@ E_{\text{gs}}=\min_{\ket{\varphi}}E(\ket{\varphi}) = \min_{\ket{\varphi}}\frac{\
 
 在梯度优化法之前，人们就已经发明了蒙特卡洛采样技术，采样法通过对随机的自旋构型进行抽样，代替了对整个系统的遍历操作。通过在张量网络中引入蒙特卡洛抽样\cite{liuGradientOptimizationFinite2017,wangMonteCarloSimulation2011,sandvikVariationalQuantumMonte2007}，我们可以将与严格缩并有关的计算复杂度大大简化。
 
-
-若我们有实数域中MPS表示的量子态
+在具有时间反演对称性的系统中(通常为无磁性系统)，张量网络可以只用实数表示。若我们有实数域中MPS表示的量子态
 \begin{equation}\label{key}
 \ket{\varphi} = \sum_{s_1\dots s_N}\Tr\left(\symbf{A}^{s_1}\symbf{A}^{s_2}\dots \symbf{A}^{s_N}\right)\ket{s_1 s_2\dots s_N}
 \end{equation}
@@ -156,7 +155,7 @@ A^{s_m}_{lrud}(n+1) = A^{s_m}_{lrud}(n) - p\cdot\delta t(n)\cdot \sign\left(\fra
 		选择步长$\alpha_k \ge 0$\;
 		将新的状态设置为$w_{k+1}\leftarrow w_k-\alpha_k g(w_k.\xi_k)$.
 	}
-	\caption{随机梯度下降(Stochastic Gradient, SG)算法}
+	\caption{随机梯度下降(Stochastic Gradient Descent, SG/SGD)算法}
 	\label{algo:algorithm1}
 \end{algorithm}
 
@@ -197,13 +196,6 @@ R_n(w_k)-R_n^* \leq \mathcal{O}(\rho^k)
 \subsubsection{SVRG算法}
 
 SVRG(Stochastic Variance Reduced Gradient)\cite{johnsonAcceleratingStochasticGradient}算法对原始的随机梯度下降进行了改进，在保持了每一步计算开销较小的同时保证了损失函数收敛于其最小值。其主要特征与其名字相同，便是在算法进行的过程中，损失函数的梯度的方差会逐渐收敛至零。当算法的方差能够收敛至零时，其函数值则因为上文中公式的限制也被控制到趋向于零。
-
-对于问题
-\begin{equation}\label{key}
-\min P(w)\,,\quad P(w)=\frac1n \sum_{i=1}^n \psi_i(w)
-\end{equation}
-SVRG中构造出了新的梯度函数，新的算法由双重循环构成：
-
 \begin{algorithm}[htb]
 	\SetKwData{Left}{left}
 	\SetKwData{This}{this}
@@ -229,8 +221,14 @@ SVRG中构造出了新的梯度函数，新的算法由双重循环构成：
 		$\tilde{w}_s=w_m$
 	}
 	\caption{SVRG算法}
-	\label{algo:algorithm1}
+	\label{algo:algorithm2}
 \end{algorithm}
+
+对于问题
+\begin{equation}\label{key}
+\min P(w)\,,\quad P(w)=\frac1n \sum_{i=1}^n \psi_i(w)
+\end{equation}
+SVRG中构造出了新的梯度函数，新的算法由双重循环构成：
 
 为了说明在新的梯度更新规则下，梯度函数的方差趋向于零，我们首先指出$\tilde{w}$与$w_t$均趋向于一个相同的数$w^*$，此时有$\tilde{\mu}\to 0$. 当函数接近收敛时，$\tilde{w}\to w_t$，由函数的连续性得$\psi_i(w_t)\to\psi_i(\tilde{w})$. 因此上文中$g_t$将收敛至零。显然当$w_t$收敛至$w^*$时，$g_t$的涨落也将随自身数值趋于零而趋于零，因此$M\to 0$. 在公式(\ref{eq-convergence1})的控制下，函数值将严格收敛至最小值。
 
@@ -248,7 +246,8 @@ SVRG中构造出了新的梯度函数，新的算法由双重循环构成：
 \end{equation}
 其中的$R(w)$函数要保证在$w\to w^*$时方差为零，$\psi(w_k)$是连续的以保证$w_k\to w$时$\psi(w_k)\to\psi(w)$. 
 
-本文构造$\nabla R(w)$为张量网络的能量函数，$\nabla\psi_{\xi}(w_k)$为系统在$w_k$时$\xi$对应的马尔科夫链上的能量梯度。为了保证公式中两个$\psi$函数相同，他们应使用相同的马尔科夫链$\xi$来计算能量。当系统处于$\tilde{w}$态时，若我们抽样得到了马尔科夫链$\xi$，则在$w_k$时直接使用这个马尔科夫链得到的样本没有物理意义，这是因为张量网络产生变化，系统的量子态在不同自旋分量上的投影发生改变，原先的马尔科夫链不满足新的细致平衡条件。
+\subsubsection{算法改造}
+本文构造$\nabla R(w)$为张量网络的能量函数，$\nabla\psi_{\xi}(w_k)$为系统在$w_k$时$\xi$对应的马尔科夫链上的能量梯度。这里的$xi$不再表示哪个$\psi_i$，而是表示由$\xi$对应的整个马尔科夫链上的数据集，类似于SCSG\cite{pmlr-v54-lei17a}算法中每次迭代中使用的Batch。为了保证公式中两个$\psi$函数相同，它们应使用相同的马尔科夫链$\xi$来计算能量。当系统处于$\tilde{w}$态时，若我们抽样得到了马尔科夫链$\xi$，则在$w_k$时直接使用这个马尔科夫链得到的样本没有物理意义，这是因为张量网络产生变化，系统的量子态在不同自旋分量上的投影发生改变，原先的马尔科夫链不满足新的细致平衡条件。
 
 为了使原先概率分布下得到的马尔科夫链可以应用至新概率分布下得到有意义的物理量，我们介绍一种被称为reweighting的技术。假设一个物理量$A$的每个状态$A_i$出现的广义概率为$\rho_i$，则将其期望值在一个广义概率为$\rho'$的分布中表示的结果为
 \begin{align*}
@@ -258,23 +257,13 @@ SVRG中构造出了新的梯度函数，新的算法由双重循环构成：
 \end{align*}
 上式中的$\rho_i$在张量网络中即为$W\!(S_i)^2$. 想求得在$w_k$对应的物理量,只需将$\tilde{w}$处算出的$W\!(S)^2$作为$\rho'$，$w_k$处的作为$\rho$，重新计算公式(\ref{eq-gradient})即可。
 
+计算$g(w_k;\tilde{w},\xi)$的期望值，
+\begin{align*}
+\mathrm{E}_\xi\!\left(g(w_k;\tilde{w},\xi)\right) &= \mathrm{E}(\nabla\psi_\xi(w_k))-\mathrm{E}\left( \nabla\psi_\xi(\tilde{w})-\nabla R_n(\tilde{w}) \right)\\
+		&= \mathrm{E}(\nabla\psi_\xi(w_k)) - 0\\
+		&= \nabla R(w_k)
+\end{align*}
+是能量梯度的无偏估计，符合一般随机梯度下降算法的要求。
 
-
-
-\section{插图}
-
-有的同学可能听说“\LaTeX{} 只能使用 eps 格式的图片”，甚至把 jpg 格式转为 eps。
-事实上，这种做法已经过时。
-而且每次编译时都要要调用外部工具解析 eps，导致降低编译速度。
-所以我们推荐矢量图直接使用 pdf 格式，位图使用 jpeg 或 png 格式。
-\begin{figure}[htb]
-  \centering
-  \includegraphics[width=0.3\textwidth]{ustc-badge.pdf}
-  \caption{图号、图题置于图的下方}
-  \label{fig:badge}
-  \note{注：图注的内容不宜放到图题中。}
-\end{figure}
-
-关于图片的并排，推荐使用较新的 \pkg{subcaption} 宏包，
-不建议使用 \pkg{subfigure} 或 \pkg{subfig} 等宏包。
+形式上来看，SVRG算法很容易应用至张量网络的梯度优化算法中。但实际上，因为加入了马尔科夫抽样，为了保证$\psi_{\xi}(\tilde{w})$与$\psi_{\xi}(w_k)$中两个函数$\psi_\xi(\cdot)$一致,必须两次都选取相同的样本，而随着状态$\tilde{w}$因为梯度下降法的迭代变动至$w_k$时，原先的马尔科夫链已经不适用，所以这里必须利用reweighting或类似方法对原先马尔科夫链的样本进行转换。
 
